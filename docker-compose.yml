@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: hillcare-postgis
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hillcare_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your environment}
+      POSTGRES_DB: ${POSTGRES_DB:-hillcare_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hillcare_user} -d ${POSTGRES_DB:-hillcare_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: hillcare-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: hillcare-api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-hillcare_user}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your environment}@db:5432/${POSTGRES_DB:-hillcare_db}
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: development
+      HILLCARE_ENABLE_DEV_AUTH: ${HILLCARE_ENABLE_DEV_AUTH:-false}
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app/apps/api
+      - ./packages:/app/packages
+      - ./data:/app/data
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: hillcare-web
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8000
+    depends_on:
+      - api
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+
+volumes:
+  pgdata:
+  redisdata:

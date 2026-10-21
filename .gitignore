@@ -1,0 +1,34 @@
+# Local datasets, generated analysis outputs, and audit artifacts may have
+# restricted redistribution terms or contain locally derived records.
+/data/
+
+# Local databases and credentials
+*.db
+*.sqlite
+*.sqlite3
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Dependencies, build output, and local caches
+**/node_modules/
+**/dist/
+**/__pycache__/
+**/.pytest_cache/
+**/.vite/
+.pytest_cache/
+
+# Local editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Terraform local state
+**/.terraform/
+*.tfstate
+*.tfstate.*

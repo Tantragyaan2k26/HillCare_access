@@ -1,0 +1,51 @@
+name: HillCare Access CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  geoengine-and-api-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e packages/geoengine
+          pip install pytest pytest-cov ruff
+
+      - name: Run Ruff Linting
+        run: ruff check packages/ apps/api/
+
+      - name: Run GeoEngine Golden & Analytical Tests
+        run: |
+          cd packages/geoengine
+          python -m pytest tests/ -v --cov=hillcare_geoengine
+
+  frontend-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Frontend Dependencies
+        working-directory: ./apps/web
+        run: npm ci || npm install
+
+      - name: Build and Typecheck Web
+        working-directory: ./apps/web
+        run: npm run build

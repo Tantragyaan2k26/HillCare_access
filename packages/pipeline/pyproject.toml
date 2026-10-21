@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hillcare-pipeline"
+version = "1.1.0"
+description = "Batch geospatial processing and ingestion pipeline for HillCare Access"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.13.0",
+    "numpy>=1.26.0",
+    "scipy>=1.11.0",
+    "hillcare-geoengine",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "../geoengine/src"]
+testpaths = ["tests"]
