@@ -1,18 +1,18 @@
 """Token bucket rate limiter with Redis backend and in-memory fallback."""
 
 import time
-from typing import Dict, Tuple
-from fastapi import HTTPException, Request, status
+
 from auth import AuthUser
+from fastapi import HTTPException, Request, status
 
 
 class InMemoryTokenBucket:
     """Fallback in-memory token bucket when Redis is unavailable."""
     def __init__(self):
         # key -> (tokens, last_update_time)
-        self.buckets: Dict[str, Tuple[float, float]] = {}
+        self.buckets: dict[str, tuple[float, float]] = {}
 
-    def is_allowed(self, key: str, capacity: int, fill_rate_per_sec: float) -> Tuple[bool, int]:
+    def is_allowed(self, key: str, capacity: int, fill_rate_per_sec: float) -> tuple[bool, int]:
         now = time.time()
         tokens, last_time = self.buckets.get(key, (float(capacity), now))
         # Add leaked/replenished tokens

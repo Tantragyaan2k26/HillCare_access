@@ -1,9 +1,7 @@
 """Facility listing and query router."""
 
-from typing import List, Optional
-from fastapi import APIRouter
-from sqlalchemy.orm import Session
 
+from fastapi import APIRouter
 from hillcare_pipeline.db import get_db_session
 from hillcare_pipeline.models import Facility, Region
 from schemas import FacilityItem
@@ -11,10 +9,10 @@ from schemas import FacilityItem
 router = APIRouter(prefix="/api/v1/facilities", tags=["Facilities"])
 
 
-@router.get("", response_model=List[FacilityItem])
+@router.get("", response_model=list[FacilityItem])
 def list_facilities(
-    district_id: Optional[int] = None,
-    tier: Optional[str] = None,
+    district_id: int | None = None,
+    tier: str | None = None,
     functional_only: bool = True,
 ):
     """List facilities filtered by district, tier (DH, CHC, PHC, HWC), and functional status."""

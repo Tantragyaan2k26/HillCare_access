@@ -6,11 +6,9 @@ trails, settlements, and landslide feature extraction.
 """
 
 from __future__ import annotations
-import math
-from typing import Dict, List, Optional, Tuple
+
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from torch import nn
 
 
 class PatchEmbed(nn.Module):
@@ -78,14 +76,14 @@ class HimalayanJEPAEncoder(nn.Module):
         self.norm = nn.LayerNorm(embed_dim)
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
 
-    def forward(self, x: torch.Tensor, mask_indices: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, mask_indices: torch.Tensor | None = None) -> torch.Tensor:
         """Encode visible context patches into latent space."""
         x = self.patch_embed(x)
         x = x + self.pos_embed
 
         if mask_indices is not None:
             # Gather unmasked context patches
-            B, _, D = x.shape
+            _, _, D = x.shape
             x = torch.gather(x, dim=1, index=mask_indices.unsqueeze(-1).expand(-1, -1, D))
 
         for block in self.blocks:

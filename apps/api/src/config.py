@@ -1,7 +1,7 @@
 """API configuration settings and environment variables."""
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 DEFAULT_DB = Path("d:/GeoAI/data/hillcare.db")
 

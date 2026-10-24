@@ -11,30 +11,27 @@ Directly tests the analytical ground truths specified in Section 15 of the Syste
 """
 
 import math
-import numpy as np
-import pytest
 
-from hillcare_geoengine.tobler import (
-    DEFAULT_CALIBRATION,
-    tobler_speed_kmh,
-    edge_time_hours,
-    edge_time_minutes,
-)
-from hillcare_geoengine.cost_surface import CostGraph, TerrainModifiers
-from hillcare_geoengine.dijkstra import multi_source_dijkstra, bounded_dijkstra
+import numpy as np
 from hillcare_geoengine.candidates import (
     CandidateSite,
     HabitationPoint,
     score_candidate,
 )
+from hillcare_geoengine.cost_surface import CostGraph, TerrainModifiers
+from hillcare_geoengine.dijkstra import multi_source_dijkstra
 from hillcare_geoengine.optimiser import (
-    select_facilities_greedy,
     select_facilities_exact,
+    select_facilities_greedy,
 )
 from hillcare_geoengine.raster import (
-    create_flat_dem,
     create_constant_slope_dem,
+    create_flat_dem,
     create_symmetric_ridge_dem,
+)
+from hillcare_geoengine.tobler import (
+    edge_time_minutes,
+    tobler_speed_kmh,
 )
 
 

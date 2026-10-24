@@ -1,10 +1,11 @@
 """Seed database with all sample pilot districts and execute published baseline runs."""
 
 from pathlib import Path
+
 from hillcare_pipeline.db import get_db_session, init_db
 from hillcare_pipeline.ingest import ingest_district_fixture
-from hillcare_pipeline.runner import run_pipeline_for_district
 from hillcare_pipeline.models import Region
+from hillcare_pipeline.runner import run_pipeline_for_district
 
 SAMPLE_DIR = Path("d:/GeoAI/data/sample")
 

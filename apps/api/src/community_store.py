@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import os
-from datetime import date, datetime, timezone
+from collections.abc import Iterator
+from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import Generator, Iterator
 
 from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
@@ -70,4 +70,4 @@ def get_community_session() -> Iterator:
 
 
 def utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)

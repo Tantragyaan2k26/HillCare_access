@@ -2,14 +2,12 @@
 
 import json
 import uuid
-import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
+from auth import AuthUser, require_role
+from fastapi import APIRouter, Depends, HTTPException, status
 from hillcare_pipeline.db import get_db_session
 from hillcare_pipeline.models import Region, Scenario
 from hillcare_pipeline.runner import run_pipeline_for_district
-from auth import AuthUser, require_role
 from schemas import ScenarioCreateRequest, ScenarioResponse
 
 router = APIRouter(prefix="/api/v1/scenarios", tags=["Scenarios"])
@@ -18,7 +16,7 @@ router = APIRouter(prefix="/api/v1/scenarios", tags=["Scenarios"])
 @router.post("", response_model=ScenarioResponse, status_code=status.HTTP_201_CREATED)
 def create_scenario(
     payload: ScenarioCreateRequest,
-    user: AuthUser = Depends(require_role("planner")),
+    user: AuthUser = Depends(require_role("planner")),  # noqa: B008
 ):
     """Submit a what-if planning scenario (e.g. hypothetical facility, custom threshold)."""
     scenario_id = f"scen_{uuid.uuid4().hex[:12]}"
@@ -69,7 +67,7 @@ def create_scenario(
 @router.get("/{scenario_id}", response_model=ScenarioResponse)
 def get_scenario(
     scenario_id: str,
-    user: AuthUser = Depends(require_role("planner")),
+    user: AuthUser = Depends(require_role("planner")),  # noqa: B008
 ):
     """Retrieve status and results of a planner scenario."""
     with get_db_session() as session:
@@ -96,7 +94,7 @@ def get_scenario(
 @router.delete("/{scenario_id}")
 def delete_scenario(
     scenario_id: str,
-    user: AuthUser = Depends(require_role("planner")),
+    user: AuthUser = Depends(require_role("planner")),  # noqa: B008
 ):
     """Delete a scenario."""
     with get_db_session() as session:

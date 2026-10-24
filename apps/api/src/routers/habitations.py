@@ -1,11 +1,15 @@
 """Habitation queries and detail endpoints."""
 
-from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy.orm import Session
 
+from fastapi import APIRouter, HTTPException, Query
 from hillcare_pipeline.db import get_db_session
-from hillcare_pipeline.models import Facility, Habitation, Region, TravelTime, Underserved
+from hillcare_pipeline.models import (
+    Facility,
+    Habitation,
+    Region,
+    TravelTime,
+    Underserved,
+)
 from schemas import (
     HabitationItem,
     HabitationListResponse,
@@ -18,13 +22,13 @@ router = APIRouter(prefix="/api/v1/habitations", tags=["Habitations"])
 
 @router.get("", response_model=HabitationListResponse)
 def list_habitations(
-    district_id: Optional[int] = None,
-    block_id: Optional[int] = None,
-    threshold: Optional[float] = None,
+    district_id: int | None = None,
+    block_id: int | None = None,
+    threshold: float | None = None,
     mode: str = "walk",
     min_population: int = 0,
     limit: int = Query(default=100, le=500),
-    cursor: Optional[int] = None,
+    cursor: int | None = None,
 ):
     """List habitations with travel times, nearest facility, and underserved flags."""
     with get_db_session() as session:
@@ -70,7 +74,7 @@ def list_habitations(
                 und_map[u.habitation_id] = {}
             und_map[u.habitation_id][str(int(u.threshold_min))] = u.is_underserved
 
-        items: List[HabitationItem] = []
+        items: list[HabitationItem] = []
         for h in habitations:
             tt = tt_map.get(h.id)
             w_base = tt.walk_min if tt else 0.0
@@ -105,9 +109,8 @@ def list_habitations(
             )
 
             # Apply threshold filter if requested
-            if threshold is not None:
-                if item.travel_time_min.base <= threshold:
-                    continue
+            if threshold is not None and item.travel_time_min.base <= threshold:
+                continue
 
             items.append(item)
 

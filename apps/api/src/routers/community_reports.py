@@ -6,16 +6,13 @@ import hmac
 import os
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from community_store import (
     CommunityReport,
     CommunityReportHistory,
     get_community_session,
     utc_now,
 )
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from schemas_community import (
     CommunityHistoryItem,
     CommunityReportCreate,
@@ -23,6 +20,8 @@ from schemas_community import (
     CommunityReportReceipt,
     CommunityReviewUpdate,
 )
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/community-reports", tags=["Community reports"])
 
@@ -52,7 +51,7 @@ def _require_reviewer(x_reviewer_token: str | None = Header(default=None)) -> No
 @router.post("", response_model=CommunityReportReceipt, status_code=status.HTTP_201_CREATED)
 def submit_report(
     payload: CommunityReportCreate,
-    session: Session = Depends(get_community_session),
+    session: Session = Depends(get_community_session),  # noqa: B008
 ):
     if payload.based_on_report_id and session.get(CommunityReport, payload.based_on_report_id) is None:
         raise HTTPException(status_code=404, detail="Referenced report does not exist.")
@@ -87,7 +86,7 @@ def submit_report(
 @router.get("/{report_id}", response_model=CommunityReportPublicStatus)
 def get_report_status(
     report_id: str,
-    session: Session = Depends(get_community_session),
+    session: Session = Depends(get_community_session),  # noqa: B008
 ):
     report = session.get(CommunityReport, report_id)
     if report is None:
@@ -99,7 +98,7 @@ def get_report_status(
 def list_reports(
     report_status: str | None = None,
     district: str | None = None,
-    session: Session = Depends(get_community_session),
+    session: Session = Depends(get_community_session),  # noqa: B008
 ):
     statement = select(CommunityReport).order_by(CommunityReport.submitted_at.desc())
     if report_status:
@@ -125,7 +124,7 @@ def list_reports(
 def review_report(
     report_id: str,
     payload: CommunityReviewUpdate,
-    session: Session = Depends(get_community_session),
+    session: Session = Depends(get_community_session),  # noqa: B008
 ):
     report = session.get(CommunityReport, report_id)
     if report is None:
@@ -148,7 +147,7 @@ def review_report(
             dependencies=[Depends(_require_reviewer)])
 def get_report_history(
     report_id: str,
-    session: Session = Depends(get_community_session),
+    session: Session = Depends(get_community_session),  # noqa: B008
 ):
     if session.get(CommunityReport, report_id) is None:
         raise HTTPException(status_code=404, detail="Community report not found.")

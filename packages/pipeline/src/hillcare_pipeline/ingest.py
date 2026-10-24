@@ -5,10 +5,12 @@ demographics, logs anomalies into the data_issue table, and records data snapsho
 """
 
 from __future__ import annotations
+
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
+
 from sqlalchemy.orm import Session
 
 from hillcare_pipeline.models import (
@@ -33,7 +35,7 @@ def compute_file_sha256(filepath: Path) -> str:
     return h.hexdigest()
 
 
-def ingest_district_fixture(session: Session, fixture_path: Path) -> Dict[str, int]:
+def ingest_district_fixture(session: Session, fixture_path: Path) -> dict[str, int]:
     """Ingest a district sample fixture file into database.
 
     Args:
@@ -44,7 +46,7 @@ def ingest_district_fixture(session: Session, fixture_path: Path) -> Dict[str, i
         Summary dict of ingested entity counts and detected issues.
     """
     with open(fixture_path, "r", encoding="utf-8") as f:
-        data: Dict[str, Any] = json.load(f)
+        data: dict[str, Any] = json.load(f)
 
     file_hash = compute_file_sha256(fixture_path)
     dist_info = data["district"]
@@ -79,7 +81,7 @@ def ingest_district_fixture(session: Session, fixture_path: Path) -> Dict[str, i
         session.flush()
 
     # 3. Ingest Block Regions
-    block_map: Dict[str, Region] = {}
+    block_map: dict[str, Region] = {}
     for b_idx, block_name in enumerate(dist_info.get("blocks", [])):
         block_id = dist_id * 100 + b_idx + 1
         block_region = session.get(Region, block_id)

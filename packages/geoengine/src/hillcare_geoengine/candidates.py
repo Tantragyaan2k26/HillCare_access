@@ -5,10 +5,9 @@ population, equity-weighted coverage, and mean travel time reductions.
 """
 
 from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple
-import numpy as np
 
 from hillcare_geoengine.cost_surface import CostGraph
 from hillcare_geoengine.dijkstra import bounded_dijkstra
@@ -19,7 +18,7 @@ class HabitationPoint:
     """Represents a settlement unit / habitation."""
     id: int
     name: str
-    grid_coord: Tuple[int, int]  # (row, col)
+    grid_coord: tuple[int, int]  # (row, col)
     population: int
     sc_pct: float = 0.0
     st_pct: float = 0.0
@@ -31,15 +30,15 @@ class HabitationPoint:
 class CandidateSite:
     """A potential health facility location and its evaluated metrics."""
     id: int
-    grid_coord: Tuple[int, int]  # (row, col)
+    grid_coord: tuple[int, int]  # (row, col)
     gain_pop: int = 0
-    newly_covered_habitations: Set[int] = field(default_factory=set)
-    reach_times: Dict[int, float] = field(default_factory=dict)  # hab_id -> new time
+    newly_covered_habitations: set[int] = field(default_factory=set)
+    reach_times: dict[int, float] = field(default_factory=dict)  # hab_id -> new time
     mean_time_delta: float = 0.0
     equity_score: float = 0.0
     max_time_reduction: float = 0.0
     is_feasible: bool = True
-    feasibility_notes: List[str] = field(default_factory=list)
+    feasibility_notes: list[str] = field(default_factory=list)
 
 
 def check_site_feasibility(
@@ -49,14 +48,14 @@ def check_site_feasibility(
     max_slope_deg: float = 25.0,
     check_radius_cells: int = 1,
     is_existing_settlement: bool = False,
-) -> Tuple[bool, List[str]]:
+) -> tuple[bool, list[str]]:
     """Verify that a candidate site has buildable terrain and no hazards.
 
     Rules:
     1. Must not be inside an active river or seasonal landslide hazard cell.
     2. If not an established settlement, slope must be under max_slope_deg in surrounding area.
     """
-    notes: List[str] = []
+    notes: list[str] = []
     if not graph.in_bounds(r, c):
         return False, ["out_of_bounds"]
 
@@ -93,9 +92,9 @@ def check_site_feasibility(
 
 def score_candidate(
     graph: CostGraph,
-    candidate_coord: Tuple[int, int],
+    candidate_coord: tuple[int, int],
     candidate_id: int,
-    habitations: List[HabitationPoint],
+    habitations: list[HabitationPoint],
     threshold_min: float,
     is_hybrid: bool = False,
     initial_delay_minutes: float = 0.0,
@@ -143,7 +142,7 @@ def score_candidate(
         initial_delay_minutes=initial_delay_minutes,
     )
 
-    newly_covered_ids: Set[int] = set()
+    newly_covered_ids: set[int] = set()
     total_gain_pop = 0
     total_equity_gain = 0.0
     total_time_reduction = 0.0
@@ -169,8 +168,7 @@ def score_candidate(
             if hab.current_time_min > new_time:
                 reduction = hab.current_time_min - new_time
                 total_time_reduction += reduction * hab.population
-                if reduction > max_red:
-                    max_red = reduction
+                max_red = max(max_red, reduction)
 
     candidate.gain_pop = total_gain_pop
     candidate.newly_covered_habitations = newly_covered_ids

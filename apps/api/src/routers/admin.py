@@ -1,15 +1,13 @@
 """Admin management endpoints for data ingestion, runs, and data issues."""
 
-from typing import List, Optional
 from pathlib import Path
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 
-from hillcare_pipeline.db import get_db_session
-from hillcare_pipeline.models import DataIssue, Region
-from hillcare_pipeline.ingest import ingest_district_fixture
-from hillcare_pipeline.runner import run_pipeline_for_district
 from auth import AuthUser, require_role
+from fastapi import APIRouter, Depends, HTTPException
+from hillcare_pipeline.db import get_db_session
+from hillcare_pipeline.ingest import ingest_district_fixture
+from hillcare_pipeline.models import DataIssue, Region
+from hillcare_pipeline.runner import run_pipeline_for_district
 
 router = APIRouter(prefix="/api/v1/admin", tags=["Admin"])
 
@@ -17,7 +15,7 @@ router = APIRouter(prefix="/api/v1/admin", tags=["Admin"])
 @router.post("/ingest")
 def trigger_ingest(
     district_name: str = "pithoragarh",
-    user: AuthUser = Depends(require_role("admin")),
+    user: AuthUser = Depends(require_role("admin")),  # noqa: B008
 ):
     """Trigger data ingestion for a district fixture."""
     fixture_path = Path(f"d:/GeoAI/data/sample/{district_name.lower()}_sample.json")
@@ -33,7 +31,7 @@ def trigger_ingest(
 def trigger_run(
     district_name: str = "pithoragarh",
     tier: str = "PHC",
-    user: AuthUser = Depends(require_role("admin")),
+    user: AuthUser = Depends(require_role("admin")),  # noqa: B008
 ):
     """Trigger a full pipeline run for a district."""
     with get_db_session() as session:
@@ -58,8 +56,8 @@ def trigger_run(
 
 @router.get("/data-issues")
 def list_data_issues(
-    status: Optional[str] = None,
-    user: AuthUser = Depends(require_role("admin")),
+    status: str | None = None,
+    user: AuthUser = Depends(require_role("admin")),  # noqa: B008
 ):
     """List data validation anomalies logged during ingestion."""
     with get_db_session() as session:

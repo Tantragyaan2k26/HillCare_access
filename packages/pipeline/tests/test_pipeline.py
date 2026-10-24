@@ -2,26 +2,25 @@
 
 import json
 from pathlib import Path
+
+import numpy as np
 import pytest
 import torch
-import numpy as np
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
+from hillcare_pipeline.ingest import ingest_district_fixture
+from hillcare_pipeline.jepa_encoder import DownstreamTrailHead, HimalayanJEPAEncoder
 from hillcare_pipeline.models import (
     Base,
-    Region,
-    Habitation,
+    CandidateSiteRecord,
     Facility,
+    Habitation,
+    Region,
     Run,
     TravelTime,
-    Underserved,
-    CandidateSiteRecord,
 )
-from hillcare_pipeline.ingest import ingest_district_fixture
 from hillcare_pipeline.runner import run_pipeline_for_district
 from hillcare_pipeline.seasonal_sar import detect_sar_monsoon_disruptions
-from hillcare_pipeline.jepa_encoder import HimalayanJEPAEncoder, DownstreamTrailHead
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 SAMPLE_FIXTURE = Path("d:/GeoAI/data/sample/rudraprayag_sample.json")
 

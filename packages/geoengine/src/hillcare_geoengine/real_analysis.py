@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 import numpy as np
 from scipy.spatial import cKDTree
@@ -40,7 +41,6 @@ def derive_terrain_surfaces(data: RealDistrictData) -> TerrainSurfaces:
     if data.dem.resolution[0] <= 0 or data.dem.resolution[1] <= 0:
         raise ValueError("DEM resolution must be positive.")
 
-    rows, cols = dem.shape
     nodata = data.dem.nodata
     slope = np.full(dem.shape, nodata, dtype=np.float32)
     center = source_valid[1:-1, 1:-1]

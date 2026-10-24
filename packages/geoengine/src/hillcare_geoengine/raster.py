@@ -5,8 +5,7 @@ symmetric ridge, river barrier) and real-world DEM utilities.
 """
 
 from __future__ import annotations
-import math
-from typing import Optional, Tuple
+
 import numpy as np
 
 
@@ -37,7 +36,7 @@ def create_symmetric_ridge_dem(
     cols: int,
     base_elevation: float = 1000.0,
     peak_elevation: float = 1500.0,
-    ridge_col: Optional[int] = None,
+    ridge_col: int | None = None,
     cell_size_x: float = 30.0,
 ) -> np.ndarray:
     """Create a symmetric ridge running north-south with peak at ridge_col."""

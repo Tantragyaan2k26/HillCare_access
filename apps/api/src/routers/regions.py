@@ -1,19 +1,23 @@
 """Regions and regional accessibility summary endpoints."""
 
-import numpy as np
-from typing import List, Optional
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.orm import Session
 
+import numpy as np
+from fastapi import APIRouter, HTTPException
 from hillcare_pipeline.db import get_db_session
-from hillcare_pipeline.models import Facility, Habitation, Region, TravelTime, Underserved
+from hillcare_pipeline.models import (
+    Facility,
+    Habitation,
+    Region,
+    TravelTime,
+    Underserved,
+)
 from schemas import RegionSummary
 
 router = APIRouter(prefix="/api/v1/regions", tags=["Regions"])
 
 
 @router.get("")
-def list_regions(level: Optional[str] = None, parent_id: Optional[int] = None):
+def list_regions(level: str | None = None, parent_id: int | None = None):
     """List regions with optional level ('state', 'district', 'block') and parent filter."""
     with get_db_session() as session:
         query = session.query(Region)

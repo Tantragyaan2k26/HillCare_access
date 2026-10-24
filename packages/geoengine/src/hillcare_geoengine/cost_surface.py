@@ -6,53 +6,53 @@ and graph reversal for efficient multi-source reverse Dijkstra.
 """
 
 from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple
+
 import numpy as np
 
 from hillcare_geoengine.tobler import (
     DEFAULT_CALIBRATION,
     edge_time_minutes,
-    tobler_speed_kmh,
 )
 
 # 16-neighbour moves: (delta_row, delta_col)
-QUEEN_OFFSETS: List[Tuple[int, int]] = [
+QUEEN_OFFSETS: list[tuple[int, int]] = [
     (-1, 0), (1, 0), (0, -1), (0, 1),      # orthogonal
     (-1, -1), (-1, 1), (1, -1), (1, 1),     # diagonal
 ]
 
-KNIGHT_OFFSETS: List[Tuple[int, int]] = [
+KNIGHT_OFFSETS: list[tuple[int, int]] = [
     (-2, -1), (-2, 1), (2, -1), (2, 1),
     (-1, -2), (-1, 2), (1, -2), (1, 2),
 ]
 
-NEIGHBOUR_OFFSETS_16: List[Tuple[int, int]] = QUEEN_OFFSETS + KNIGHT_OFFSETS
+NEIGHBOUR_OFFSETS_16: list[tuple[int, int]] = QUEEN_OFFSETS + KNIGHT_OFFSETS
 
 
 @dataclass
 class TerrainModifiers:
     """Terrain overlays that modify or restrict movement."""
     # 2D boolean mask: True where footpaths/trails exist (1.25x speed multiplier)
-    trail_mask: Optional[np.ndarray] = None
+    trail_mask: np.ndarray | None = None
     trail_speed_multiplier: float = 1.25
 
     # 2D boolean mask: True where motorable roads exist (hybrid mode)
-    road_mask: Optional[np.ndarray] = None
+    road_mask: np.ndarray | None = None
     road_vehicle_speed_kmh: float = 20.0
 
     # 2D boolean mask: True where river is present
-    river_mask: Optional[np.ndarray] = None
+    river_mask: np.ndarray | None = None
 
     # 2D boolean mask: True where bridges/fords exist across rivers
-    bridge_mask: Optional[np.ndarray] = None
+    bridge_mask: np.ndarray | None = None
 
     # 2D boolean mask: True where seasonal/landslide disruptions block passage
-    disruption_mask: Optional[np.ndarray] = None
+    disruption_mask: np.ndarray | None = None
 
     # 2D float array: Multipliers for land cover / hazard friction (>= 1.0)
-    friction_raster: Optional[np.ndarray] = None
+    friction_raster: np.ndarray | None = None
 
 
 @dataclass
@@ -67,7 +67,7 @@ class CostGraph:
     reversed_for_facilities: bool = True
 
     @property
-    def shape(self) -> Tuple[int, int]:
+    def shape(self) -> tuple[int, int]:
         return self.dem.shape
 
     @property
@@ -82,11 +82,11 @@ class CostGraph:
         """Check if grid coordinates are within the DEM bounding box."""
         return 0 <= r < self.rows and 0 <= c < self.cols
 
-    def _get_traversed_cells(self, r1: int, c1: int, r2: int, c2: int) -> List[Tuple[int, int]]:
+    def _get_traversed_cells(self, r1: int, c1: int, r2: int, c2: int) -> list[tuple[int, int]]:
         """Return all grid cells traversed along the line segment from (r1, c1) to (r2, c2)."""
         dr = r2 - r1
         dc = c2 - c1
-        cells: Set[Tuple[int, int]] = {(r1, c1), (r2, c2)}
+        cells: set[tuple[int, int]] = {(r1, c1), (r2, c2)}
 
         # For Knight's moves (e.g. 2 cells in one direction, 1 in the other)
         # add intermediate cells to prevent jumping over 1-cell barriers
@@ -162,18 +162,21 @@ class CostGraph:
             return 0.0
 
         # Check if road (in hybrid mode, roads allow vehicle speed)
-        if is_hybrid and self.modifiers.road_mask is not None:
-            if self.modifiers.road_mask[src_r, src_c] and self.modifiers.road_mask[dst_r, dst_c]:
-                # Motorable road travel
-                speed = self.modifiers.road_vehicle_speed_kmh
-                dist_km = math.hypot(h_dist, dz) / 1000.0
-                return (dist_km / speed) * 60.0
+        if (
+            is_hybrid
+            and self.modifiers.road_mask is not None
+            and self.modifiers.road_mask[src_r, src_c]
+            and self.modifiers.road_mask[dst_r, dst_c]
+        ):
+            # Motorable road travel
+            speed = self.modifiers.road_vehicle_speed_kmh
+            dist_km = math.hypot(h_dist, dz) / 1000.0
+            return (dist_km / speed) * 60.0
 
         # Check trail boost
         trail_mult = 1.0
-        if self.modifiers.trail_mask is not None:
-            if self.modifiers.trail_mask[dst_r, dst_c]:
-                trail_mult = self.modifiers.trail_speed_multiplier
+        if self.modifiers.trail_mask is not None and self.modifiers.trail_mask[dst_r, dst_c]:
+            trail_mult = self.modifiers.trail_speed_multiplier
 
         # Surface friction
         friction = 1.0
@@ -195,9 +198,9 @@ class CostGraph:
         r: int,
         c: int,
         is_hybrid: bool = False,
-    ) -> List[Tuple[int, int, float]]:
+    ) -> list[tuple[int, int, float]]:
         """Return list of (nr, nc, cost_minutes) for all valid 16-neighbours."""
-        res: List[Tuple[int, int, float]] = []
+        res: list[tuple[int, int, float]] = []
         for dr, dc in NEIGHBOUR_OFFSETS_16:
             nr = r + dr
             nc = c + dc

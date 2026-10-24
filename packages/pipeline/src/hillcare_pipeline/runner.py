@@ -6,24 +6,23 @@ candidates -> scoring -> selection -> publish.
 """
 
 from __future__ import annotations
+
 import datetime
-import hashlib
 import json
 import math
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
-import numpy as np
-from sqlalchemy.orm import Session
+from typing import Any
 
-from hillcare_geoengine.cost_surface import CostGraph, TerrainModifiers
-from hillcare_geoengine.dijkstra import multi_source_dijkstra, bounded_dijkstra
+import numpy as np
 from hillcare_geoengine.candidates import (
     CandidateSite,
     HabitationPoint,
     score_candidate,
 )
+from hillcare_geoengine.cost_surface import CostGraph, TerrainModifiers
+from hillcare_geoengine.dijkstra import multi_source_dijkstra
 from hillcare_geoengine.optimiser import select_facilities_greedy
 from hillcare_geoengine.raster import create_synthetic_himalayan_valley
+from sqlalchemy.orm import Session
 
 from hillcare_pipeline.models import (
     CandidateSiteRecord,
@@ -39,13 +38,13 @@ from hillcare_pipeline.models import (
 def run_pipeline_for_district(
     session: Session,
     district_id: int,
-    run_id: Optional[str] = None,
+    run_id: str | None = None,
     tier: str = "PHC",
-    thresholds: List[float] = [30.0, 60.0, 90.0],
+    thresholds: list[float] | None = None,
     k_candidates: int = 5,
     is_monsoon: bool = False,
-    disruption_mask: Optional[np.ndarray] = None,
-) -> Dict[str, Any]:
+    disruption_mask: np.ndarray | None = None,
+) -> dict[str, Any]:
     """Execute the end-to-end access analysis and siting pipeline for a district.
 
     Args:
@@ -61,12 +60,15 @@ def run_pipeline_for_district(
     Returns:
         Summary metrics and statistics of the published run.
     """
+    if thresholds is None:
+        thresholds = [30.0, 60.0, 90.0]
+
     district = session.get(Region, district_id)
     if not district:
         raise ValueError(f"District ID {district_id} not found in database.")
 
     if run_id is None:
-        ts = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        ts = datetime.datetime.now(datetime.UTC).strftime("%Y%m%d_%H%M%S")
         run_id = f"run_{district.name.lower()}_{ts}"
 
     params = {
@@ -129,12 +131,12 @@ def run_pipeline_for_district(
     lat_step = (max_lat - min_lat) / (grid_rows - 1)
     lon_step = (max_lon - min_lon) / (grid_cols - 1)
 
-    def geo_to_grid(lat: float, lon: float) -> Tuple[int, int]:
-        r = int(round((lat - min_lat) / lat_step))
-        c = int(round((lon - min_lon) / lon_step))
+    def geo_to_grid(lat: float, lon: float) -> tuple[int, int]:
+        r = round((lat - min_lat) / lat_step)
+        c = round((lon - min_lon) / lon_step)
         return max(0, min(grid_rows - 1, r)), max(0, min(grid_cols - 1, c))
 
-    def grid_to_geo(r: int, c: int) -> Tuple[float, float]:
+    def grid_to_geo(r: int, c: int) -> tuple[float, float]:
         lat = min_lat + r * lat_step
         lon = min_lon + c * lon_step
         return round(lat, 5), round(lon, 5)
@@ -177,8 +179,8 @@ def run_pipeline_for_district(
     graph_high = CostGraph(dem, cell_size_x, cell_size_y, modifiers=modifiers, calibration=1.2)
 
     # Map facilities to grid sources
-    fac_sources: List[Tuple[int, int]] = []
-    fac_ids: List[int] = []
+    fac_sources: list[tuple[int, int]] = []
+    fac_ids: list[int] = []
     for f in db_facs:
         r, c = geo_to_grid(f.lat, f.lon)
         fac_sources.append((r, c))
@@ -199,9 +201,9 @@ def run_pipeline_for_district(
     )
 
     # 7. Extract travel time per habitation & Classify Underserved
-    hab_points: List[HabitationPoint] = []
-    travel_time_records: List[TravelTime] = []
-    underserved_records: List[Underserved] = []
+    hab_points: list[HabitationPoint] = []
+    travel_time_records: list[TravelTime] = []
+    underserved_records: list[Underserved] = []
 
     served_count_60 = 0
     underserved_count_60 = 0
@@ -272,7 +274,7 @@ def run_pipeline_for_district(
     session.bulk_save_objects(underserved_records)
 
     # 8. Candidate Facility Generation & Scoring (60-minute threshold)
-    candidate_sites: List[CandidateSite] = []
+    candidate_sites: list[CandidateSite] = []
     cand_id_seq = 1
 
     # Candidates prioritized from underserved habitations, or most remote habitations
@@ -312,7 +314,7 @@ def run_pipeline_for_district(
         opt_result.selected_candidate_ids = [candidate_sites[0].id]
 
     # 10. Persist Top Candidates
-    cand_records: List[CandidateSiteRecord] = []
+    cand_records: list[CandidateSiteRecord] = []
     for rank, cid in enumerate(opt_result.selected_candidate_ids, start=1):
         cand = next(c for c in candidate_sites if c.id == cid)
         c_lat, c_lon = grid_to_geo(cand.grid_coord[0], cand.grid_coord[1])
@@ -333,7 +335,7 @@ def run_pipeline_for_district(
 
     # Finalize Run Record
     run_record.status = "succeeded"
-    run_record.finished_at = datetime.datetime.utcnow()
+    run_record.finished_at = datetime.datetime.now(datetime.UTC)
     session.flush()
 
     pct_underserved = round((underserved_pop_60 / total_pop * 100.0), 1) if total_pop > 0 else 0.0

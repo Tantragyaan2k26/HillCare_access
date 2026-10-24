@@ -1,8 +1,9 @@
 """Health and readiness endpoints."""
 
 from fastapi import APIRouter
-from sqlalchemy import text
 from hillcare_pipeline.db import get_db_session
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 router = APIRouter(tags=["Health"])
 
@@ -15,7 +16,7 @@ def health_check():
     try:
         with get_db_session() as session:
             session.execute(text("SELECT 1"))
-    except Exception:
+    except SQLAlchemyError:
         db_ok = False
 
     return {

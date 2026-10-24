@@ -1,10 +1,12 @@
 """Database connection, engine initialization, and session management."""
 
 from __future__ import annotations
+
 import os
-from pathlib import Path
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
+from pathlib import Path
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 

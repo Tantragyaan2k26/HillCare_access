@@ -4,11 +4,9 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import Optional
-
-from fastapi import Depends, Header, HTTPException, status
 
 from config import ENVIRONMENT
+from fastapi import Depends, Header, HTTPException, status
 
 
 @dataclass
@@ -16,7 +14,7 @@ class AuthUser:
     id: str
     email: str
     role: str
-    org_id: Optional[str] = None
+    org_id: str | None = None
 
 
 ROLE_HIERARCHY = {
@@ -28,8 +26,8 @@ ROLE_HIERARCHY = {
 
 
 async def get_current_user(
-    x_user_role: Optional[str] = Header(None),
-    x_user_id: Optional[str] = Header(None),
+    x_user_role: str | None = Header(None),
+    x_user_id: str | None = Header(None),
 ) -> AuthUser:
     """Resolve identity from development headers only when explicitly enabled."""
     dev_auth_enabled = (
@@ -55,7 +53,7 @@ def require_role(min_role: str):
     """Dependency factory checking that user role meets minimum required role level."""
     min_level = ROLE_HIERARCHY.get(min_role, 0)
 
-    async def _role_checker(user: AuthUser = Depends(get_current_user)) -> AuthUser:
+    async def _role_checker(user: AuthUser = Depends(get_current_user)) -> AuthUser:  # noqa: B008
         user_level = ROLE_HIERARCHY.get(user.role, 0)
         if user_level < min_level:
             raise HTTPException(

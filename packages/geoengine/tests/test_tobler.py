@@ -1,14 +1,12 @@
 """Unit tests for Tobler's Hiking Function and modifiers."""
 
 import math
-import pytest
+
 from hillcare_geoengine.tobler import (
-    DEFAULT_CALIBRATION,
     MIN_SPEED_KMH,
-    MAX_SPEED_KMH,
-    tobler_speed_kmh,
     edge_time_hours,
     edge_time_minutes,
+    tobler_speed_kmh,
 )
 
 

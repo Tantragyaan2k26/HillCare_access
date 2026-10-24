@@ -1,10 +1,8 @@
 """Candidate site query router."""
 
 import json
-from typing import Optional
-from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy.orm import Session
 
+from fastapi import APIRouter, Query
 from hillcare_pipeline.db import get_db_session
 from hillcare_pipeline.models import CandidateSiteRecord, Run
 from schemas import CandidateItem, CandidateListResponse

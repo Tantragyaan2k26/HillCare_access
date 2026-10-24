@@ -2,7 +2,7 @@
 
 import sys
 from pathlib import Path
-import pytest
+
 from fastapi.testclient import TestClient
 
 root_dir = Path(__file__).resolve().parent.parent.parent.parent
@@ -13,6 +13,7 @@ sys.path.extend([
 ])
 
 import auth
+
 from apps.api.src.main import app
 
 client = TestClient(app)

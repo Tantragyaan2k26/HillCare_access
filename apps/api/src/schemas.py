@@ -1,7 +1,9 @@
 """Pydantic schemas and API contracts for HillCare Access."""
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
+
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -20,7 +22,7 @@ class NearestFacility(BaseModel):
 class HabitationItem(BaseModel):
     id: int
     name: str
-    block: Optional[str] = None
+    block: str | None = None
     lat: float
     lon: float
     elevation_m: float
@@ -29,16 +31,16 @@ class HabitationItem(BaseModel):
     st_pct: float
     travel_time_min: TravelTimeRange
     hybrid_time_min: float
-    nearest_facility: Optional[NearestFacility] = None
-    underserved: Dict[str, bool]  # e.g. {"30": True, "60": True, "90": False}
-    quality_flags: List[str] = Field(default_factory=list)
+    nearest_facility: NearestFacility | None = None
+    underserved: dict[str, bool]  # e.g. {"30": True, "60": True, "90": False}
+    quality_flags: list[str] = Field(default_factory=list)
 
 
 class HabitationListResponse(BaseModel):
     run_id: str
     total_count: int
-    items: List[HabitationItem]
-    next_cursor: Optional[str] = None
+    items: list[HabitationItem]
+    next_cursor: str | None = None
 
 
 class FacilityItem(BaseModel):
@@ -76,13 +78,13 @@ class CandidateItem(BaseModel):
     gain_pop: int
     mean_time_delta: float
     equity_score: float
-    feasibility: Dict[str, Any] = Field(default_factory=dict)
+    feasibility: dict[str, Any] = Field(default_factory=dict)
 
 
 class CandidateListResponse(BaseModel):
     run_id: str
     objective: str
-    candidates: List[CandidateItem]
+    candidates: list[CandidateItem]
 
 
 class ScenarioCreateRequest(BaseModel):
@@ -94,8 +96,8 @@ class ScenarioCreateRequest(BaseModel):
     objective: str = "max_new_coverage"
     k: int = 1
     calibration: float = 1.0
-    hypothetical_facility_lat: Optional[float] = None
-    hypothetical_facility_lon: Optional[float] = None
+    hypothetical_facility_lat: float | None = None
+    hypothetical_facility_lon: float | None = None
 
 
 class ScenarioResponse(BaseModel):
@@ -103,30 +105,30 @@ class ScenarioResponse(BaseModel):
     owner_id: str
     name: str
     status: str  # queued, running, succeeded, failed
-    params: Dict[str, Any]
-    run_id: Optional[str] = None
-    result: Optional[Dict[str, Any]] = None
+    params: dict[str, Any]
+    run_id: str | None = None
+    result: dict[str, Any] | None = None
 
 
 class AssistantCitation(BaseModel):
     source_title: str
-    section: Optional[str] = None
+    section: str | None = None
     quote: str
-    uri: Optional[str] = None
+    uri: str | None = None
 
 
 class AssistantQueryRequest(BaseModel):
     query: str
     language: str = "en"  # "en" or "hi"
-    district_id: Optional[int] = None
+    district_id: int | None = None
 
 
 class AssistantResponse(BaseModel):
     query: str
     language: str
     answer: str
-    citations: List[AssistantCitation]
-    tool_calls_executed: List[str] = Field(default_factory=list)
+    citations: list[AssistantCitation]
+    tool_calls_executed: list[str] = Field(default_factory=list)
 
 
 class ProblemDetails(BaseModel):
@@ -134,4 +136,4 @@ class ProblemDetails(BaseModel):
     title: str
     status: int
     detail: str
-    trace_id: Optional[str] = None
+    trace_id: str | None = None

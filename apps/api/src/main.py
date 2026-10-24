@@ -2,7 +2,6 @@
 
 import sys
 from pathlib import Path
-from typing import Any, Dict
 
 # Ensure packages are discoverable
 root_dir = Path(__file__).resolve().parent.parent.parent.parent
@@ -12,11 +11,10 @@ sys.path.extend([
     str(Path(__file__).resolve().parent),
 ])
 
-from fastapi import FastAPI, HTTPException, Request, status
+from config import CORS_ORIGINS
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-from config import CORS_ORIGINS
 from routers import (
     admin,
     assistant,
@@ -25,8 +23,8 @@ from routers import (
     facilities,
     habitations,
     health,
-    regions,
     real_data,
+    regions,
     runs,
     scenarios,
 )

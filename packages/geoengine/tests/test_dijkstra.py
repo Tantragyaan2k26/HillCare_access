@@ -1,10 +1,7 @@
 """Unit tests for Dijkstra shortest path algorithms."""
 
-import math
-import numpy as np
-import pytest
-from hillcare_geoengine.cost_surface import CostGraph, TerrainModifiers
-from hillcare_geoengine.dijkstra import multi_source_dijkstra, bounded_dijkstra
+from hillcare_geoengine.cost_surface import CostGraph
+from hillcare_geoengine.dijkstra import bounded_dijkstra, multi_source_dijkstra
 from hillcare_geoengine.raster import create_flat_dem, create_synthetic_himalayan_valley
 
 
@@ -47,5 +44,5 @@ def test_bounded_dijkstra_cutoff():
     assert reach_map[(20, 20)] == 0.0
 
     # All reachable cells must be <= cutoff
-    for coord, travel_time in reach_map.items():
+    for travel_time in reach_map.values():
         assert travel_time <= cutoff

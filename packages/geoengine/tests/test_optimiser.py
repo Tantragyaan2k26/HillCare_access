@@ -2,7 +2,9 @@
 
 import pytest
 from hillcare_geoengine.candidates import CandidateSite, HabitationPoint
-from hillcare_geoengine.optimiser import select_facilities_greedy, select_facilities_exact
+from hillcare_geoengine.optimiser import (
+    select_facilities_greedy,
+)
 
 
 @pytest.fixture

@@ -5,9 +5,9 @@ and exact combinatorial search for small candidate sets.
 """
 
 from __future__ import annotations
+
 import itertools
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple
 
 from hillcare_geoengine.candidates import CandidateSite, HabitationPoint
 
@@ -17,16 +17,16 @@ class OptimizationResult:
     """Result of facility siting optimization."""
     objective: str
     k: int
-    selected_candidate_ids: List[int]
+    selected_candidate_ids: list[int]
     total_gain_pop: int
-    newly_covered_habitations: Set[int]
-    marginal_gains: List[int] = field(default_factory=list)
+    newly_covered_habitations: set[int]
+    marginal_gains: list[int] = field(default_factory=list)
     cumulative_pop_coverage_pct: float = 0.0
 
 
 def select_facilities_greedy(
-    candidates: List[CandidateSite],
-    habitations: List[HabitationPoint],
+    candidates: list[CandidateSite],
+    habitations: list[HabitationPoint],
     k: int = 1,
     objective: str = "max_new_coverage",
 ) -> OptimizationResult:
@@ -51,20 +51,20 @@ def select_facilities_greedy(
             newly_covered_habitations=set(),
         )
 
-    hab_by_id: Dict[int, HabitationPoint] = {h.id: h for h in habitations}
+    hab_by_id: dict[int, HabitationPoint] = {h.id: h for h in habitations}
     total_underserved_pop = sum(h.population for h in habitations if h.is_underserved)
 
-    selected_ids: List[int] = []
-    already_covered: Set[int] = set()
-    marginal_gains: List[int] = []
+    selected_ids: list[int] = []
+    already_covered: set[int] = set()
+    marginal_gains: list[int] = []
     total_gain = 0
 
     available_candidates = list(feasible_candidates)
 
     for _ in range(min(k, len(available_candidates))):
-        best_candidate: Optional[CandidateSite] = None
+        best_candidate: CandidateSite | None = None
         best_marginal_score: float = -1.0
-        best_new_habs: Set[int] = set()
+        best_new_habs: set[int] = set()
         best_pop_gain: int = 0
 
         for cand in available_candidates:
@@ -114,8 +114,8 @@ def select_facilities_greedy(
 
 
 def select_facilities_exact(
-    candidates: List[CandidateSite],
-    habitations: List[HabitationPoint],
+    candidates: list[CandidateSite],
+    habitations: list[HabitationPoint],
     k: int = 1,
 ) -> OptimizationResult:
     """Exact combinatorial solver for small candidate sets (brute force benchmark).
@@ -135,12 +135,12 @@ def select_facilities_exact(
     hab_by_id = {h.id: h for h in habitations}
     total_underserved_pop = sum(h.population for h in habitations if h.is_underserved)
 
-    best_combo: Optional[Tuple[CandidateSite, ...]] = None
+    best_combo: tuple[CandidateSite, ...] | None = None
     best_gain = -1
-    best_covered_set: Set[int] = set()
+    best_covered_set: set[int] = set()
 
     for combo in itertools.combinations(feasible, min(k, len(feasible))):
-        union_covered: Set[int] = set()
+        union_covered: set[int] = set()
         for c in combo:
             union_covered.update(c.newly_covered_habitations)
         gain = sum(hab_by_id[hid].population for hid in union_covered if hid in hab_by_id)
@@ -156,7 +156,7 @@ def select_facilities_exact(
         objective="max_new_coverage_exact",
         k=k,
         selected_candidate_ids=selected_ids,
-        total_gain_pop=best_gain if best_gain >= 0 else 0,
+        total_gain_pop=max(best_gain, 0),
         newly_covered_habitations=best_covered_set,
         cumulative_pop_coverage_pct=cov_pct,
     )

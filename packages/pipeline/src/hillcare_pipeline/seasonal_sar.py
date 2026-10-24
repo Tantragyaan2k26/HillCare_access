@@ -5,8 +5,7 @@ to detect monsoon flooding, river swelling, and landslide scars through dense mo
 """
 
 from __future__ import annotations
-import math
-from typing import Dict, List, Optional, Tuple
+
 import numpy as np
 
 
@@ -46,7 +45,7 @@ def detect_sar_monsoon_disruptions(
     slope_raster: np.ndarray,
     change_threshold_db: float = -4.5,
     high_slope_threshold_deg: float = 25.0,
-) -> Tuple[np.ndarray, Dict[str, float]]:
+) -> tuple[np.ndarray, dict[str, float]]:
     """Detect seasonal disruptions (landslides and flooded valley segments) using SAR change detection.
 
     Sentinel-1 radar penetrates clouds during monsoon.

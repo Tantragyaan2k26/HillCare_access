@@ -6,9 +6,9 @@ Optimized for:
 """
 
 from __future__ import annotations
+
 import heapq
-import math
-from typing import Dict, List, Optional, Set, Tuple
+
 import numpy as np
 
 from hillcare_geoengine.cost_surface import CostGraph
@@ -16,12 +16,12 @@ from hillcare_geoengine.cost_surface import CostGraph
 
 def multi_source_dijkstra(
     graph: CostGraph,
-    sources: List[Tuple[int, int]],
-    source_ids: Optional[List[int]] = None,
+    sources: list[tuple[int, int]],
+    source_ids: list[int] | None = None,
     is_hybrid: bool = False,
     initial_delay_minutes: float = 0.0,
-    max_time_minutes: Optional[float] = None,
-) -> Tuple[np.ndarray, np.ndarray]:
+    max_time_minutes: float | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
     """Compute travel time from all grid cells to the nearest source facility.
 
     Runs multi-source Dijkstra outward from the facility cells. On a reversed graph
@@ -44,7 +44,7 @@ def multi_source_dijkstra(
     dist = np.full((rows, cols), np.inf, dtype=np.float64)
     nearest_id = np.full((rows, cols), -1, dtype=np.int32)
 
-    pq: List[Tuple[float, int, int, int]] = []  # (time, r, c, src_id)
+    pq: list[tuple[float, int, int, int]] = []  # (time, r, c, src_id)
 
     if source_ids is None:
         source_ids = list(range(len(sources)))
@@ -82,11 +82,11 @@ def multi_source_dijkstra(
 
 def bounded_dijkstra(
     graph: CostGraph,
-    source: Tuple[int, int],
+    source: tuple[int, int],
     cutoff_minutes: float,
     is_hybrid: bool = False,
     initial_delay_minutes: float = 0.0,
-) -> Dict[Tuple[int, int], float]:
+) -> dict[tuple[int, int], float]:
     """Compute reachability from a single candidate point up to a cutoff threshold.
 
     Used by the candidate siting optimizer to find all habitations reachable
@@ -106,8 +106,8 @@ def bounded_dijkstra(
     if not graph.in_bounds(sr, sc):
         return {}
 
-    dist: Dict[Tuple[int, int], float] = {(sr, sc): initial_delay_minutes}
-    pq: List[Tuple[float, int, int]] = [(initial_delay_minutes, sr, sc)]
+    dist: dict[tuple[int, int], float] = {(sr, sc): initial_delay_minutes}
+    pq: list[tuple[float, int, int]] = [(initial_delay_minutes, sr, sc)]
 
     while pq:
         d, r, c = heapq.heappop(pq)
@@ -117,9 +117,8 @@ def bounded_dijkstra(
 
         for nr, nc, edge_cost in graph.get_neighbours(r, c, is_hybrid=is_hybrid):
             new_dist = d + edge_cost
-            if new_dist <= cutoff_minutes:
-                if new_dist < dist.get((nr, nc), float("inf")):
-                    dist[(nr, nc)] = new_dist
-                    heapq.heappush(pq, (new_dist, nr, nc))
+            if new_dist <= cutoff_minutes and new_dist < dist.get((nr, nc), float("inf")):
+                dist[(nr, nc)] = new_dist
+                heapq.heappush(pq, (new_dist, nr, nc))
 
     return dist

@@ -16,12 +16,12 @@ sys.path.extend([
     str(ROOT / "apps" / "api" / "src"),
 ])
 
-from apps.api.src.main import app  # noqa: E402
-from community_store import (  # noqa: E402
+from community_store import (
     CommunityBase,
     get_community_session,
 )
 
+from apps.api.src.main import app
 
 client = TestClient(app)
 

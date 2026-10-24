@@ -10,18 +10,16 @@ from typing import Any
 import numpy as np
 import pytest
 import tifffile
-from pyproj import Transformer
-from shapely.geometry import LineString, Point, box
-from shapely.ops import transform
-
 from hillcare_geoengine.real_analysis import (
     derive_terrain_surfaces,
     district_review_records,
     nearest_facility_straight_line,
     road_geometry_diagnostics,
 )
-from hillcare_geoengine.real_data import RealRaster, load_real_district_data
-
+from hillcare_geoengine.real_data import load_real_district_data
+from pyproj import Transformer
+from shapely.geometry import LineString, Point, box
+from shapely.ops import transform
 
 CRS84 = {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}}
 DISTRICT = "Chamoli"

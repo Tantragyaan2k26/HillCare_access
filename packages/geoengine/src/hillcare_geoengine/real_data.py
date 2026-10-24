@@ -9,9 +9,10 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 import numpy as np
 import tifffile
@@ -19,7 +20,6 @@ from pyproj import CRS, Transformer
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import transform as transform_geometry
-
 
 DISTRICTS = ("Chamoli", "Pithoragarh", "Rudraprayag")
 VECTOR_CRS = CRS.from_epsg(4326)
@@ -154,10 +154,10 @@ def _load_dem(data_dir: Path, district: str) -> RealRaster:
 def _geojson_crs(document: Mapping[str, Any], path: Path) -> CRS:
     declaration = document.get("crs")
     if not isinstance(declaration, Mapping):
-        raise ValueError(f"{path} does not explicitly declare a CRS.")
+        raise ValueError(f"{path} does not explicitly declare a CRS.")  # noqa: TRY004
     properties = declaration.get("properties")
     if not isinstance(properties, Mapping) or not isinstance(properties.get("name"), str):
-        raise ValueError(f"{path} has an unsupported GeoJSON CRS declaration.")
+        raise ValueError(f"{path} has an unsupported GeoJSON CRS declaration.")  # noqa: TRY004
     crs_name = properties["name"]
     crs = CRS.from_user_input(crs_name)
     if crs.to_epsg() != 4326 and crs.to_authority() != ("OGC", "CRS84"):
@@ -198,7 +198,7 @@ def _make_feature(
     try:
         geometry_data = feature.get("geometry")
         if not isinstance(geometry_data, Mapping):
-            raise ValueError("geometry is missing")
+            raise ValueError("geometry is missing")  # noqa: TRY004
         source_geometry = shape(geometry_data)
         if source_geometry.is_empty:
             issues.append("geometry is empty")

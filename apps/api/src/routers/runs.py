@@ -1,9 +1,8 @@
 """Published runs and reproducibility metadata router."""
 
 import json
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.orm import Session
 
+from fastapi import APIRouter, HTTPException
 from hillcare_pipeline.db import get_db_session
 from hillcare_pipeline.models import Run
 

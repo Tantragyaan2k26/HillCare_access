@@ -7,15 +7,21 @@ Implements Section 4.6 Request Flow D and F13:
 """
 
 from __future__ import annotations
-import re
-from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 
-from hillcare_pipeline.db import get_db_session
-from hillcare_pipeline.models import Facility, Habitation, Region, TravelTime, Underserved
+import re
+from typing import Any
+
 from auth import AuthUser, require_role
+from fastapi import APIRouter, Depends
+from hillcare_pipeline.db import get_db_session
+from hillcare_pipeline.models import (
+    Facility,
+    Habitation,
+    Region,
+    Underserved,
+)
 from schemas import AssistantCitation, AssistantQueryRequest, AssistantResponse
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1/assistant", tags=["Assistant"])
 
@@ -83,7 +89,7 @@ DOCUMENTS_CORPUS = [
 ]
 
 
-def retrieve_documents(query: str, language: str = "en", top_k: int = 2) -> List[Dict[str, Any]]:
+def retrieve_documents(query: str, language: str = "en", top_k: int = 2) -> list[dict[str, Any]]:
     """Simple keyword & semantic scoring hybrid retrieval over documents corpus."""
     q_tokens = set(re.findall(r"\w+", query.lower()))
     scored_docs = []
@@ -103,7 +109,7 @@ def retrieve_documents(query: str, language: str = "en", top_k: int = 2) -> List
     return [d for _, d in scored_docs[:top_k]]
 
 
-def query_district_live_stats(session: Session, district_name: str) -> Optional[Dict[str, Any]]:
+def query_district_live_stats(session: Session, district_name: str) -> dict[str, Any] | None:
     """Query live access statistics from database for assistant grounding."""
     district = session.query(Region).filter(Region.name.ilike(f"%{district_name}%")).filter(Region.level == "district").first()
     if not district:
@@ -137,7 +143,7 @@ def query_district_live_stats(session: Session, district_name: str) -> Optional[
 @router.post("", response_model=AssistantResponse)
 def ask_assistant(
     payload: AssistantQueryRequest,
-    user: AuthUser = Depends(require_role("anonymous")),
+    user: AuthUser = Depends(require_role("anonymous")),  # noqa: B008
 ):
     """Ask health planning questions grounded in IPHS norms and live district model runs."""
     q = payload.query.strip()
@@ -172,7 +178,7 @@ def ask_assistant(
         )
 
     tool_calls = []
-    citations: List[AssistantCitation] = []
+    citations: list[AssistantCitation] = []
     answer_parts = []
 
     # Check for live district queries
