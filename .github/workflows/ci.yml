@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e packages/geoengine
+          pip install -e "packages/geoengine[real-data]"
           pip install pytest pytest-cov ruff
 
       - name: Run Ruff Linting
